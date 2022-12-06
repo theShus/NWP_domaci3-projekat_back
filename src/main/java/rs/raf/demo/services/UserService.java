@@ -52,14 +52,14 @@ public class UserService implements UserServiceInterface{
     @Override
     public User updateUser(UserInfo user) {
         User newUser = userRepository.getById(user.getId());
-        Collection<Role> roles = new ArrayList<>();
-
         newUser.setName(user.getName());
         newUser.setLastName(user.getLastName());
         newUser.setMail(user.getMail());
-        Collections.addAll(roles, user.getRoles());
+        Collection<Role> roles = new ArrayList<>();
+        for (Role role: user.getRoles()) {
+            roles.add(role);
+        }
         newUser.setRoles(roles);
-
         return userRepository.save(newUser);
     }
 
