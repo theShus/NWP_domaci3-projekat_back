@@ -1,21 +1,18 @@
 package rs.raf.demo.services;
 
-import org.springframework.data.jpa.repository.Modifying;
 import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.User;
-
-import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface MachineServiceInterface {
     Machine createMachine(String name, String userMail);
     Optional<Machine> findById(Long id);
-    List<Machine> getMachinesByUser(String username);
-    List<Machine> searchMachines(String name, String status, LocalDate dateFrom, LocalDate dateTo, User id);
+    Collection<Machine> getMachinesByUser(String userMail);
+    Collection<Machine> searchMachines(String name, List<String> statuses, LocalDate dateFrom, LocalDate dateTo, String userMail);
     void destroyMachine(Long id);
     void startMachine(Long id) throws InterruptedException;
     void stopMachine(Long id) throws InterruptedException;

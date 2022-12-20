@@ -12,10 +12,10 @@ import rs.raf.demo.repositories.MachineRepository;
 import rs.raf.demo.repositories.UserRepository;
 
 import javax.persistence.LockModeType;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MachineService implements MachineServiceInterface{
@@ -37,13 +37,31 @@ public class MachineService implements MachineServiceInterface{
     }
 
     @Override
-    public List<Machine> getMachinesByUser(String username) {
-        return null;
+    public Collection<Machine> getMachinesByUser(String userMail) {
+        return machineRepository.findAllByCreatedBy(userRepository.findByMail(userMail));
     }
 
     @Override
-    public List<Machine> searchMachines(String name, String status, LocalDate dateFrom, LocalDate dateTo, User id) {
-        return null;
+    public Collection<Machine> searchMachines(String name, List<String> statuses, LocalDate dateFrom, LocalDate dateTo, String userMail) {
+        ArrayList<Machine> allMachinesByUser = (ArrayList<Machine>) getMachinesByUser(userMail);
+        ArrayList<Machine> filteredMachines = new ArrayList<>();
+        int addFlag;
+
+        for (Machine machine: allMachinesByUser){
+            addFlag = 0;
+
+            if (name != null && machine.getName().toLowerCase().contains(name.toLowerCase())) addFlag++; //flag == 1
+            else if (name == null) addFlag++;
+
+            if (statuses != null && statuses.contains(machine.getStatus().toString())) addFlag++; //flag == 2
+            else if (statuses == null) addFlag++;
+
+            if(dateFrom != null && dateTo != null && machine.getCreationDate().isAfter(dateFrom) && machine.getCreationDate().isBefore(dateTo)) addFlag++; //flag == 3
+            else if (dateFrom == null || dateTo == null) addFlag++;
+
+            if (addFlag == 3) filteredMachines.add(machine);
+        }
+            return filteredMachines;
     }
 
     @Override
