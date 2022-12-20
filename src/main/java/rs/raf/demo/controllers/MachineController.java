@@ -1,6 +1,7 @@
 package rs.raf.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,7 @@ import rs.raf.demo.model.enums.Status;
 import rs.raf.demo.services.MachineService;
 import rs.raf.demo.services.UserService;
 
+import javax.websocket.server.PathParam;
 import java.util.Optional;
 
 @CrossOrigin
@@ -22,6 +24,17 @@ public class MachineController {
     public MachineController(MachineService machineService, UserService userService) {
         this.machineService = machineService;
         this.userService = userService;
+    }
+
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Machine createMachine(@PathParam("name") String name, @PathParam("mail") String mail){
+        return machineService.createMachine(name, mail);
+    }
+
+    @DeleteMapping(value = "/delete/{id}")
+    private ResponseEntity<?> deleteUser(@PathVariable("id") Long id){
+        machineService.destroyMachine(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(value = "/start/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

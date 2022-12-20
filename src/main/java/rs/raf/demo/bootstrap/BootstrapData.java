@@ -43,8 +43,10 @@ public class BootstrapData implements CommandLineRunner {
         userService.addRoleToUser("santic@raf.rs", "can_read_users");
         userService.addRoleToUser("santic@raf.rs", "can_update_users");
 
-        machineService.addMachine(new Machine(0L, Status.STOPPED, userService.getUserByMail("ljeremic@raf.rs"), true, "Machine1", LocalDate.now(), 0));
-        machineService.addMachine(new Machine(0L, Status.RUNNING, userService.getUserByMail("ljeremic@raf.rs"), true, "Machine2", LocalDate.now(), 0));
+        machineService.createMachine("Machine1","ljeremic@raf.rs");
+        machineService.createMachine("Machine2","ljeremic@raf.rs");
+        machineService.createMachine("Machine3","santic@raf.rs");
+
 
         System.out.println("Data loaded");
 

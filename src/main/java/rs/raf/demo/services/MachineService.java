@@ -9,10 +9,9 @@ import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.User;
 import rs.raf.demo.model.enums.Status;
 import rs.raf.demo.repositories.MachineRepository;
+import rs.raf.demo.repositories.UserRepository;
 
-import javax.crypto.Mac;
 import javax.persistence.LockModeType;
-import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,21 +21,12 @@ import java.util.Optional;
 public class MachineService implements MachineServiceInterface{
 
     private MachineRepository machineRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    public MachineService(MachineRepository machineRepository) {
+    public MachineService(MachineRepository machineRepository, UserRepository userRepository) {
         this.machineRepository = machineRepository;
-    }
-
-    @Override
-    public Machine addMachine(Machine machine) {
-        return machineRepository.save(machine);
-    }
-
-    @Override
-    @Lock(LockModeType.OPTIMISTIC)
-    public Machine saveMachine(Machine machine) {
-        return machineRepository.save(machine);
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -57,8 +47,19 @@ public class MachineService implements MachineServiceInterface{
     }
 
     @Override
-    public void deleteMachine(Long id) {
+    public Machine createMachine(String name, String userMail) {
+        return machineRepository.save(new Machine(0L, Status.STOPPED, userRepository.findByMail(userMail), true, name, LocalDate.now(), 0));
+    }
 
+    @Override
+    public void destroyMachine(Long id) {
+        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        if (optionalMachine.isPresent()) {
+            Machine machine = optionalMachine.get();
+            if (machine.getStatus() != Status.STOPPED) return;
+            machine.setActive(false);
+            machineRepository.save(machine);
+        }
     }
 
     @Override
@@ -74,7 +75,6 @@ public class MachineService implements MachineServiceInterface{
             machine.setStatus(Status.RUNNING);
             machineRepository.save(machine);
             System.err.println("Machine started");
-
         }
     }
 
@@ -91,7 +91,6 @@ public class MachineService implements MachineServiceInterface{
             machine.setStatus(Status.STOPPED);
             machineRepository.save(machine);
             System.err.println("Machine stopped");
-
         }
     }
 

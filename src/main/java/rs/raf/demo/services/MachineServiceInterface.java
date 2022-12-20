@@ -12,12 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MachineServiceInterface {
-    Machine addMachine(Machine machine);
-    Machine saveMachine (Machine machine);
+    Machine createMachine(String name, String userMail);
     Optional<Machine> findById(Long id);
     List<Machine> getMachinesByUser(String username);
     List<Machine> searchMachines(String name, String status, LocalDate dateFrom, LocalDate dateTo, User id);
-    void deleteMachine(Long id);
+    void destroyMachine(Long id);
     void startMachine(Long id) throws InterruptedException;
     void stopMachine(Long id) throws InterruptedException;
     void restartMachine(Long id) throws InterruptedException;
