@@ -51,6 +51,7 @@ public class UserService implements UserServiceInterface{
 
     @Override
     public User updateUser(UserInfo user) {
+//        System.err.println(user);
         User newUser = userRepository.getById(user.getId());
         newUser.setName(user.getName());
         newUser.setLastName(user.getLastName());
