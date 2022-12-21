@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.User;
 import rs.raf.demo.model.enums.Status;
@@ -30,18 +31,20 @@ public class MachineService implements MachineServiceInterface{
     }
 
     @Override
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Transactional
     public Optional<Machine> findById(Long id) {
         System.out.println("finding");
         return machineRepository.findById(id);
     }
 
     @Override
+    @Transactional
     public Collection<Machine> getMachinesByUser(String userMail) {
         return machineRepository.findAllByCreatedBy(userRepository.findByMail(userMail));
     }
 
     @Override
+    @Transactional
     public Collection<Machine> searchMachines(String name, List<String> statuses, LocalDate dateFrom, LocalDate dateTo, String userMail) {
         ArrayList<Machine> allMachinesByUser = (ArrayList<Machine>) getMachinesByUser(userMail);
         ArrayList<Machine> filteredMachines = new ArrayList<>();
@@ -66,12 +69,13 @@ public class MachineService implements MachineServiceInterface{
 
     @Override
     public Machine createMachine(String name, String userMail) {
-        return machineRepository.save(new Machine(0L, Status.STOPPED, userRepository.findByMail(userMail), true, name, LocalDate.now(), 0));
+        return machineRepository.save(new Machine(0L, Status.STOPPED, userRepository.findByMail(userMail), true, name, LocalDate.now()/*, 0*/));
     }
 
     @Override
+    @Transactional
     public void destroyMachine(Long id) {
-        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        Optional<Machine> optionalMachine = this.findById(id);
         if (optionalMachine.isPresent()) {
             Machine machine = optionalMachine.get();
             if (machine.getStatus() != Status.STOPPED) return;
@@ -82,8 +86,9 @@ public class MachineService implements MachineServiceInterface{
 
     @Override
     @Async
+    @Transactional
     public void startMachine(Long id) throws InterruptedException {
-        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        Optional<Machine> optionalMachine = this.findById(id);
         if (optionalMachine.isPresent()){
             Machine machine = optionalMachine.get();
             if (machine.getStatus() != Status.STOPPED) return;
@@ -98,8 +103,9 @@ public class MachineService implements MachineServiceInterface{
 
     @Override
     @Async
+    @Transactional
     public void stopMachine(Long id) throws InterruptedException {
-        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        Optional<Machine> optionalMachine = this.findById(id);
         if (optionalMachine.isPresent()){
             Machine machine = optionalMachine.get();
             if (machine.getStatus() != Status.RUNNING) return;
@@ -114,9 +120,9 @@ public class MachineService implements MachineServiceInterface{
 
     @Override
     @Async
-    @Modifying
+    @Transactional
     public void restartMachine(Long id) throws InterruptedException {
-        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        Optional<Machine> optionalMachine = this.findById(id);
         if (optionalMachine.isPresent()){
             Machine machine = optionalMachine.get();
             if (machine.getStatus() != Status.RUNNING) return;
@@ -126,7 +132,7 @@ public class MachineService implements MachineServiceInterface{
             machine.setStatus(Status.STOPPED);
             machineRepository.save(machine);
 
-            machine = machineRepository.findById(id).get();
+            machine = this.findById(id).get();
 
             System.err.println("Starting machine for restart");
             Thread.sleep((long)(Math.random() * (10000 -5000) + 5000));

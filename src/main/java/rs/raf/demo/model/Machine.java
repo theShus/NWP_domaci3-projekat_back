@@ -32,8 +32,8 @@ public class Machine {
     @Column(nullable = false)
     private LocalDate creationDate;
 
-    @Column()
-    @Version
-    private Integer version;
+//    @Column()
+//    @Version
+//    private Integer version;
 
 }

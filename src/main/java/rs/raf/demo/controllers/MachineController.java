@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.User;
 import rs.raf.demo.model.enums.Status;
+import rs.raf.demo.repositories.MachineRepository;
 import rs.raf.demo.services.MachineService;
 import rs.raf.demo.services.UserService;
 
@@ -22,11 +23,13 @@ import java.util.*;
 public class MachineController {
     private final MachineService machineService;
     private final UserService userService;
+    private final MachineRepository machineRepository;
 
     @Autowired
-    public MachineController(MachineService machineService, UserService userService) {
+    public MachineController(MachineService machineService, UserService userService, MachineRepository machineRepository) {
         this.machineService = machineService;
         this.userService = userService;
+        this.machineRepository = machineRepository;
     }
 
     @GetMapping(value = "/get_filtered", produces = MediaType.APPLICATION_JSON_VALUE)
