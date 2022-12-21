@@ -16,7 +16,7 @@ public interface MachineServiceInterface {
     void destroyMachine(Long id);
     void startMachine(Long id) throws InterruptedException;
     void stopMachine(Long id) throws InterruptedException;
-    void restartMachine(Long id) throws InterruptedException;
+    void restartMachine(Long id) throws InterruptedException, ParseException;
     void scheduleMachine(Long id, String date, String time, String action) throws ParseException;
 
 

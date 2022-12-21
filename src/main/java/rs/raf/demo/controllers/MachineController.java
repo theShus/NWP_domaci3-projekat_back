@@ -13,6 +13,7 @@ import rs.raf.demo.services.MachineService;
 import rs.raf.demo.services.UserService;
 
 import javax.websocket.server.PathParam;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -95,7 +96,7 @@ public class MachineController {
     }
 
     @GetMapping(value = "/restart/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> restartMachine(@PathVariable Long id) throws InterruptedException {
+    public ResponseEntity<?> restartMachine(@PathVariable Long id) throws InterruptedException, ParseException {
 
         Optional<Machine> optionalMachine = machineService.findById(id);
 
@@ -105,6 +106,12 @@ public class MachineController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping(value = "/schedule")
+    public ResponseEntity<?> scheduleMachine(@PathParam("id") Long id, @PathParam("date") String date,  @PathParam("time") String time,  @PathParam("action") String action) throws ParseException {
+        machineService.scheduleMachine(id,date,time,action);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }
