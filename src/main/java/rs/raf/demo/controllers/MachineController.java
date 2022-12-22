@@ -115,10 +115,9 @@ public class MachineController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(value = "/errors",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<ErrorMessage> getErrorHistory(@PathParam("userEmail") String userEmail){
-        return machineService.findAllErrorsForUser(userEmail);
+    @GetMapping(value = "/errors", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getErrorHistory(@PathParam("mail") String mail){
+        return ResponseEntity.ok(machineService.findAllErrorsForUser(mail));
     }
 
 }
