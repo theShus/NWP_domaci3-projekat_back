@@ -39,6 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
             username = jwtUtil.extractUsername(jwt);
         }
 
+        //pronadjemo usera, nasetujemo mu authorities, i proverimo koje ima a koji mu trebaju u SpringSecurityConfig
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
             System.out.println();
             UserDetails userDetails = this.userService.loadUserByUsername(username);
