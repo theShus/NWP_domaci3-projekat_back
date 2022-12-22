@@ -24,7 +24,7 @@ public class Machine {
     private User createdBy;
 
     @Column(nullable = false)
-    private Boolean active;
+    private boolean active;
 
     @Column(nullable = false)
     private String name;

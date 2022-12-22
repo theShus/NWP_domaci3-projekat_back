@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.User;
 import rs.raf.demo.model.enums.Status;
@@ -75,7 +76,7 @@ public class MachineController {
         Optional<Machine> optionalMachine = machineService.findById(id);
 
         if(optionalMachine.isPresent() && optionalMachine.get().getStatus() == Status.STOPPED) {
-            machineService.startMachine(id);
+            machineService.startMachine(id, false);
             return ResponseEntity.ok(optionalMachine.get());
         } else {
             return ResponseEntity.notFound().build();
@@ -88,7 +89,7 @@ public class MachineController {
         Optional<Machine> optionalMachine = machineService.findById(id);
 
         if(optionalMachine.isPresent() && optionalMachine.get().getStatus() == Status.RUNNING) {
-            machineService.stopMachine(id);
+            machineService.stopMachine(id, false);
             return ResponseEntity.ok(optionalMachine.get());
         } else {
             return ResponseEntity.notFound().build();
@@ -101,7 +102,7 @@ public class MachineController {
         Optional<Machine> optionalMachine = machineService.findById(id);
 
         if(optionalMachine.isPresent() && optionalMachine.get().getStatus() == Status.RUNNING) {
-            machineService.restartMachine(id);
+            machineService.restartMachine(id, false);
             return ResponseEntity.ok(optionalMachine.get());
         } else {
             return ResponseEntity.notFound().build();
@@ -112,6 +113,12 @@ public class MachineController {
     public ResponseEntity<?> scheduleMachine(@PathParam("id") Long id, @PathParam("date") String date,  @PathParam("time") String time,  @PathParam("action") String action) throws ParseException {
         machineService.scheduleMachine(id,date,time,action);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/errors",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<ErrorMessage> getErrorHistory(@PathParam("userEmail") String userEmail){
+        return machineService.findAllErrorsForUser(userEmail);
     }
 
 }

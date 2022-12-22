@@ -14,9 +14,9 @@ public interface MachineServiceInterface {
     Collection<Machine> getMachinesByUser(String userMail);
     Collection<Machine> searchMachines(String name, List<String> statuses, LocalDate dateFrom, LocalDate dateTo, String userMail);
     void destroyMachine(Long id);
-    void startMachine(Long id) throws InterruptedException;
-    void stopMachine(Long id) throws InterruptedException;
-    void restartMachine(Long id) throws InterruptedException, ParseException;
+    void startMachine(Long id,boolean scheduled) throws InterruptedException;
+    void stopMachine(Long id, boolean scheduled) throws InterruptedException;
+    void restartMachine(Long id, boolean scheduled) throws InterruptedException, ParseException;
     void scheduleMachine(Long id, String date, String time, String action) throws ParseException;
 
 

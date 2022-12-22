@@ -8,9 +8,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.User;
 import rs.raf.demo.model.enums.Status;
+import rs.raf.demo.repositories.ErrorMessageRepository;
 import rs.raf.demo.repositories.MachineRepository;
 import rs.raf.demo.repositories.UserRepository;
 
@@ -28,12 +30,14 @@ public class MachineService implements MachineServiceInterface {
     private MachineRepository machineRepository;
     private UserRepository userRepository;
     private TaskScheduler taskScheduler;
+    private ErrorMessageRepository errorMessageRepository;
 
     @Autowired
-    public MachineService(MachineRepository machineRepository, UserRepository userRepository, TaskScheduler taskScheduler) {
+    public MachineService(MachineRepository machineRepository, UserRepository userRepository, TaskScheduler taskScheduler, ErrorMessageRepository errorMessageRepository) {
         this.machineRepository = machineRepository;
         this.userRepository = userRepository;
         this.taskScheduler = taskScheduler;
+        this.errorMessageRepository = errorMessageRepository;
 
     }
 
@@ -81,6 +85,11 @@ public class MachineService implements MachineServiceInterface {
         return machineRepository.save(new Machine(0L, Status.STOPPED, userRepository.findByMail(userMail), true, name, LocalDate.now()/*, 0*/));
     }
 
+    @Transactional
+    public Collection<ErrorMessage> findAllErrorsForUser(String userMail){
+        return errorMessageRepository.findAllByMachine_CreatedBy(userRepository.findByMail(userMail));
+    }
+
     @Override
     @Transactional
     public void destroyMachine(Long id) {
@@ -97,58 +106,77 @@ public class MachineService implements MachineServiceInterface {
     @Override
     @Async
     @Transactional
-    public void startMachine(Long id) throws InterruptedException {
-        Optional<Machine> optionalMachine = this.findById(id);
-        if (optionalMachine.isPresent()) {
+    public void startMachine(Long id, boolean scheduled) throws InterruptedException {
+        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        if(optionalMachine.isPresent()) {
             Machine machine = optionalMachine.get();
-            if (machine.getStatus() != Status.STOPPED) return;
+            if(machine.isActive()) {
+                if (machine.getStatus() == Status.STOPPED) {
+                    System.err.println("Starting machine");
+                    Thread.sleep((long) (Math.random() * (15000 - 10000) + 10000));
+                    machine.setStatus(Status.RUNNING);
+                    machineRepository.save(machine);
+                    System.err.println("Machine started");
+                } else
+                if(scheduled)
+                    errorMessageRepository.save(new ErrorMessage(0L, "The machine's status is not 'STOPPED'.", "START", LocalDate.now(), machine));
+            } else
+            if(scheduled)
+                errorMessageRepository.save(new ErrorMessage(0L, "The machine is deactivated.", "START",LocalDate.now(), machine));
+        }
+    }
 
-            System.err.println("Starting machine");
-            Thread.sleep((long) (Math.random() * (15000 - 10000) + 10000));
-            machine.setStatus(Status.RUNNING);
-            machineRepository.save(machine);
-            System.err.println("Machine started");
+
+    @Override
+    @Async
+    @Transactional
+    public void stopMachine(Long id, boolean scheduled) throws InterruptedException {
+        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        if(optionalMachine.isPresent()) {
+            Machine machine = optionalMachine.get();
+            if(machine.isActive()) {
+                if (machine.getStatus() == Status.RUNNING) {
+                    System.err.println("Stopping machine");
+                    Thread.sleep((long) (Math.random() * (15000 - 10000) + 10000));
+                    machine.setStatus(Status.STOPPED);
+                    machineRepository.save(machine);
+                    System.err.println("Machine stopped");
+                } else
+                if(scheduled)
+                    errorMessageRepository.save(new ErrorMessage(0L, "The machine's status is not 'RUNNING'.", "STOP", LocalDate.now(), machine));
+            } else
+            if(scheduled)
+                errorMessageRepository.save(new ErrorMessage(0L, "The machine is deactivated.", "STOP",LocalDate.now(), machine));
         }
     }
 
     @Override
     @Async
     @Transactional
-    public void stopMachine(Long id) throws InterruptedException {
-        Optional<Machine> optionalMachine = this.findById(id);
-        if (optionalMachine.isPresent()) {
+    public void restartMachine(Long id, boolean scheduled) throws InterruptedException {//todo izmeni :)
+        Optional<Machine> optionalMachine = machineRepository.findById(id);
+        if(optionalMachine.isPresent()) {
             Machine machine = optionalMachine.get();
-            if (machine.getStatus() != Status.RUNNING) return;
+            if(machine.isActive()) {
+                if (machine.getStatus() == Status.RUNNING) {
+                    System.err.println("Stopping machine for restart");
+                    Thread.sleep((long) (Math.random() * (10000 - 5000) + 5000));
+                    machine.setStatus(Status.STOPPED);
+                    machineRepository.save(machine);
 
-            System.err.println("Stopping machine");
-            Thread.sleep((long) (Math.random() * (15000 - 10000) + 10000));
-            machine.setStatus(Status.STOPPED);
-            machineRepository.save(machine);
-            System.err.println("Machine stopped");
-        }
-    }
+                    machine = this.findById(id).get();
 
-    @Override
-    @Async
-    @Transactional
-    public void restartMachine(Long id) throws InterruptedException {
-        Optional<Machine> optionalMachine = this.findById(id);
-        if (optionalMachine.isPresent()) {
-            Machine machine = optionalMachine.get();
-            if (machine.getStatus() != Status.RUNNING) return;
-
-            System.err.println("Stopping machine for restart");
-            Thread.sleep((long) (Math.random() * (10000 - 5000) + 5000));
-            machine.setStatus(Status.STOPPED);
-            machineRepository.save(machine);
-
-            machine = this.findById(id).get();
-
-            System.err.println("Starting machine for restart");
-            Thread.sleep((long) (Math.random() * (10000 - 5000) + 5000));
-            machine.setStatus(Status.RUNNING);
-            machineRepository.save(machine);
-            System.err.println("Machine restarted");
+                    System.err.println("Starting machine for restart");
+                    Thread.sleep((long) (Math.random() * (10000 - 5000) + 5000));
+                    machine.setStatus(Status.RUNNING);
+                    machineRepository.save(machine);
+                    System.err.println("Machine restarted");
+                } else
+                if(scheduled)
+                    errorMessageRepository.save(new ErrorMessage(0L, "The machine's status is not 'RUNNING'.", "RESTART", LocalDate.now(), machine));
+            } else
+            if(scheduled)
+                errorMessageRepository.save(new ErrorMessage(0L, "The machine is deactivated.", "RESTART",LocalDate.now(), machine));
         }
     }
 
@@ -162,13 +190,13 @@ public class MachineService implements MachineServiceInterface {
             try {
                 switch (action) {
                     case "Start":
-                        startMachine(id);
+                        startMachine(id, true);
                         break;
                     case "Stop":
-                        stopMachine(id);
+                        stopMachine(id, true);
                         break;
                     case "Restart":
-                        restartMachine(id);
+                        restartMachine(id, true);
                         break;
                 }
             } catch (Exception e) {
