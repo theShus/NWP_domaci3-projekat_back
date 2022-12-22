@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import rs.raf.demo.model.Machine;
 import rs.raf.demo.model.enums.Status;
 import rs.raf.demo.repositories.MachineRepository;
+import rs.raf.demo.requests.CreateRequest;
 import rs.raf.demo.requests.LoginRequest;
 import rs.raf.demo.requests.ScheduleRequest;
 import rs.raf.demo.services.MachineService;
@@ -60,9 +61,9 @@ public class MachineController {
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Machine createMachine(@PathParam("name") String name, @PathParam("mail") String mail){
-        System.err.println(name + " --- " + mail);
-        return machineService.createMachine(name, mail);
+    public Machine createMachine(@RequestBody CreateRequest createRequest){
+        System.err.println(createRequest.getName() + " --- " + createRequest.getMail());
+        return machineService.createMachine(createRequest.getName(), createRequest.getMail());
     }
 
     @DeleteMapping(value = "/destroy/{id}")
