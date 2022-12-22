@@ -5,11 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import rs.raf.demo.model.ErrorMessage;
 import rs.raf.demo.model.Machine;
-import rs.raf.demo.model.User;
 import rs.raf.demo.model.enums.Status;
 import rs.raf.demo.repositories.MachineRepository;
+import rs.raf.demo.requests.LoginRequest;
+import rs.raf.demo.requests.ScheduleRequest;
 import rs.raf.demo.services.MachineService;
 import rs.raf.demo.services.UserService;
 
@@ -59,13 +59,14 @@ public class MachineController {
         return ResponseEntity.ok().body(machineService.getMachinesByUser(mail));
     }
 
-    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public Machine createMachine(@PathParam("name") String name, @PathParam("mail") String mail){
+        System.err.println(name + " --- " + mail);
         return machineService.createMachine(name, mail);
     }
 
-    @DeleteMapping(value = "/delete/{id}")
-    private ResponseEntity<?> deleteUser(@PathVariable("id") Long id){
+    @DeleteMapping(value = "/destroy/{id}")
+    private ResponseEntity<?> destroyMachine(@PathVariable("id") Long id){
         machineService.destroyMachine(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -97,7 +98,7 @@ public class MachineController {
     }
 
     @GetMapping(value = "/restart/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> restartMachine(@PathVariable Long id) throws InterruptedException, ParseException {
+    public ResponseEntity<?> restartMachine(@PathVariable Long id) throws InterruptedException {
 
         Optional<Machine> optionalMachine = machineService.findById(id);
 
@@ -110,8 +111,8 @@ public class MachineController {
     }
 
     @PostMapping(value = "/schedule")
-    public ResponseEntity<?> scheduleMachine(@PathParam("id") Long id, @PathParam("date") String date,  @PathParam("time") String time,  @PathParam("action") String action) throws ParseException {
-        machineService.scheduleMachine(id,date,time,action);
+    public ResponseEntity<?> scheduleMachine(@RequestBody ScheduleRequest scheduleRequest) throws ParseException {
+        machineService.scheduleMachine(scheduleRequest.getId(),scheduleRequest.getDate(),scheduleRequest.getTime(),scheduleRequest.getAction());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -183,7 +183,7 @@ public class MachineService implements MachineServiceInterface {
     @Override
     @Transactional
     public void scheduleMachine(Long id, String date, String time, String action) throws ParseException {
-        Date date1 = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").parse(date + " " + time);
+        Date date1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(date + " " + time);
         System.err.println("Machine scheduled for " + date1);
 
         this.taskScheduler.schedule(() -> {
