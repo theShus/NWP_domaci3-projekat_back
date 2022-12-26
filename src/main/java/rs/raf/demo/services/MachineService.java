@@ -153,7 +153,7 @@ public class MachineService implements MachineServiceInterface {
     @Override
     @Async
     @Transactional
-    public void restartMachine(Long id, boolean scheduled) throws InterruptedException {//todo izmeni :)
+    public void restartMachine(Long id, boolean scheduled) throws InterruptedException {
         Optional<Machine> optionalMachine = machineRepository.findById(id);
         if(optionalMachine.isPresent()) {
             Machine machine = optionalMachine.get();
